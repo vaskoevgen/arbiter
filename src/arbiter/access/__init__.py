@@ -1,0 +1,80 @@
+"""Access auditor: OpenAPI schema walking, field classification, and slot gating."""
+
+from .auditor import audit_observed_output, audit_slot, compute_structural_profile
+from .classifier import classify_fields, load_classification_registry, load_gate_config
+from .errors import (
+    AuditInputError,
+    ClassificationInputError,
+    ClassificationRegistryError,
+    GateConfigError,
+    LedgerWriteError,
+    ProfileComputationError,
+    RefResolutionError,
+    SchemaDepthExceededError,
+    SchemaWalkError,
+)
+from .models import (
+    AccessFinding,
+    AccessFindingEvidence,
+    ClassificationRegistryEntry,
+    ClassificationResult,
+    ClassifiedField,
+    DataTier,
+    DeclaredAccess,
+    FieldEntry,
+    FieldPath,
+    FindingCode,
+    FindingSeverity,
+    GateConfig,
+    NodeId,
+    AdapterSlotId,
+    ObservedOutput,
+    SchemaWarning,
+    SlotDecision,
+    SlotDecisionVerdict,
+    StructuralProfile,
+    WalkResult,
+)
+from .walker import walk_response_schema
+
+__all__ = [
+    # Models
+    "DataTier",
+    "FindingCode",
+    "FindingSeverity",
+    "SlotDecisionVerdict",
+    "NodeId",
+    "FieldPath",
+    "AdapterSlotId",
+    "FieldEntry",
+    "SchemaWarning",
+    "WalkResult",
+    "ClassifiedField",
+    "ClassificationResult",
+    "StructuralProfile",
+    "AccessFinding",
+    "AccessFindingEvidence",
+    "GateConfig",
+    "SlotDecision",
+    "DeclaredAccess",
+    "ClassificationRegistryEntry",
+    "ObservedOutput",
+    # Functions
+    "walk_response_schema",
+    "classify_fields",
+    "compute_structural_profile",
+    "audit_slot",
+    "audit_observed_output",
+    "load_gate_config",
+    "load_classification_registry",
+    # Errors
+    "SchemaWalkError",
+    "RefResolutionError",
+    "SchemaDepthExceededError",
+    "ClassificationRegistryError",
+    "ClassificationInputError",
+    "ProfileComputationError",
+    "AuditInputError",
+    "LedgerWriteError",
+    "GateConfigError",
+]

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arbiter - Trust Enforcement for the Pact/Baton Stack</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --text: #c8c8d4;
+    --text-dim: #6e6e82;
+    --accent: #7c6fe0;
+    --accent-glow: #9d8cf030;
+    --green: #4ade80;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --mono: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+  header {
+    padding: 80px 0 40px;
+    text-align: center;
+  }
+  h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  h1 span { color: var(--accent); }
+  .tagline {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    max-width: 540px;
+    margin: 0 auto 32px;
+  }
+  .badges {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-family: var(--mono);
+    font-weight: 500;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+  }
+  .badge.python { border-color: #3b82f620; color: #60a5fa; }
+  .badge.mit { border-color: #4ade8020; color: var(--green); }
+
+  .stack-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 40px 0;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+    overflow-x: auto;
+    text-align: center;
+  }
+  .stack-diagram .highlight { color: var(--accent); font-weight: 600; }
+  .stack-diagram .dim { color: #44445a; }
+
+  .four-questions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 40px 0;
+  }
+  @media (max-width: 600px) { .four-questions { grid-template-columns: 1fr; } }
+  .question {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .question h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .question p {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+  .question .icon {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    text-align: center;
+    line-height: 28px;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+  .q-access .icon { background: #3b82f618; color: #60a5fa; }
+  .q-consistency .icon { background: #f59e0b18; color: var(--amber); }
+  .q-blast .icon { background: #ef444418; color: var(--red); }
+  .q-trust .icon { background: #4ade8018; color: var(--green); }
+
+  .trust-tiers {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 40px 0;
+  }
+  .trust-tiers h2 {
+    font-size: 1.1rem;
+    color: #fff;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .tier-bar {
+    display: flex;
+    height: 32px;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .tier-bar div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #000;
+  }
+  .t-prob { background: #ef4444; flex: 25; }
+  .t-low { background: #f59e0b; flex: 25; }
+  .t-est { background: #eab308; flex: 25; }
+  .t-high { background: #22c55e; flex: 15; }
+  .t-trusted { background: #4ade80; flex: 10; }
+  .tier-labels {
+    display: flex;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+  .tier-labels span { flex: 1; }
+  .tier-labels span:last-child { text-align: right; }
+
+  .install-block {
+    margin: 40px 0;
+    text-align: center;
+  }
+  .install-block code {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--green);
+  }
+  .install-block code .prefix { color: var(--text-dim); }
+
+  .cta {
+    text-align: center;
+    margin: 48px 0 80px;
+  }
+  .cta a {
+    display: inline-block;
+    padding: 12px 32px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: box-shadow 0.2s;
+  }
+  .cta a:hover { box-shadow: 0 0 24px var(--accent-glow); }
+  .cta a + a {
+    margin-left: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1><span>Arbiter</span></h1>
+    <p class="tagline">Access auditing, consistency analysis, blast-radius classification, and trust enforcement for the Pact/Baton stack.</p>
+    <div class="badges">
+      <span class="badge python">Python 3.12+</span>
+      <span class="badge mit">MIT License</span>
+      <span class="badge">Pact/Baton Stack</span>
+    </div>
+  </header>
+
+  <div class="stack-diagram">
+    <span class="dim">constrain</span> &rarr; <span class="dim">pact</span> &rarr; <span class="highlight">[arbiter]</span> &rarr; <span class="dim">baton</span> &rarr; <span class="dim">production</span><br>
+    <span class="dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&uarr;</span><br>
+    <span class="dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stigmergy (analysis)</span>
+  </div>
+
+  <div class="four-questions">
+    <div class="question q-access">
+      <div class="icon">A</div>
+      <h3>Access</h3>
+      <p>Did this node touch data it was permitted to touch? OpenAPI schema walking catches declaration gaps before runtime.</p>
+    </div>
+    <div class="question q-consistency">
+      <div class="icon">C</div>
+      <h3>Consistency</h3>
+      <p>Does the node's self-reported log match adapter-observed I/O? Unexplained fields produce findings that feed trust scores.</p>
+    </div>
+    <div class="question q-blast">
+      <div class="icon">B</div>
+      <h3>Blast Radius</h3>
+      <p>What data tiers does a change touch? PUBLIC-only auto-merges. PII soaks. FINANCIAL/AUTH/COMPLIANCE gates for humans.</p>
+    </div>
+    <div class="question q-trust">
+      <div class="icon">T</div>
+      <h3>Trust</h3>
+      <p>Trust is earned through clean runs, not declared in config. A single canary escape zeroes the score. Recovery requires human review.</p>
+    </div>
+  </div>
+
+  <div class="trust-tiers">
+    <h2>Trust Tiers (display only -- policy uses raw score)</h2>
+    <div class="tier-bar">
+      <div class="t-prob">PROBATIONARY</div>
+      <div class="t-low">LOW</div>
+      <div class="t-est">ESTABLISHED</div>
+      <div class="t-high">HIGH</div>
+      <div class="t-trusted">TRUSTED</div>
+    </div>
+    <div class="tier-labels">
+      <span>0.0</span>
+      <span>0.25</span>
+      <span>0.50</span>
+      <span>0.75</span>
+      <span>1.0</span>
+    </div>
+  </div>
+
+  <div class="install-block">
+    <code><span class="prefix">$</span> pip install arbiter</code>
+  </div>
+
+  <div class="cta">
+    <a href="https://github.com/jmcentire/arbiter">GitHub</a>
+    <a href="https://github.com/jmcentire/arbiter#cli-reference">Documentation</a>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    Part of the <a href="https://github.com/jmcentire/pact">Pact</a> / <a href="https://github.com/jmcentire/baton">Baton</a> stack &middot; MIT License &middot; 2026
+  </div>
+</footer>
+</body>
+</html>
