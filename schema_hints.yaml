@@ -1,0 +1,18 @@
+version: "1"
+project: arbiter
+storage_backends:
+  - type: filesystem
+    purpose: trust_ledger
+    path: .arbiter/
+    format: jsonl
+    fields:
+      - name: trust_ledger
+        file: trust_ledger.jsonl
+        classification: COMPLIANCE
+        annotation: append_only
+      - name: canary_corpus
+        file: canary_corpus.json
+        classification: PII
+      - name: access_graph
+        file: access_graph.json
+        classification: PUBLIC

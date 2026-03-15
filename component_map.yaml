@@ -1,0 +1,128 @@
+version: "1"
+project: arbiter
+components:
+  - id: cli
+    role: ingress
+    protocol: cli
+    authority: user_commands
+    data_access:
+      PUBLIC: read_write
+
+  - id: registry
+    role: library
+    authority: access_graph
+    data_access:
+      PUBLIC: read_write
+
+  - id: trust
+    role: library
+    authority: trust_scoring
+    data_access:
+      PUBLIC: read_write
+      COMPLIANCE: write
+
+  - id: taint
+    role: library
+    authority: canary_detection
+    data_access:
+      PII: read_write
+
+  - id: blast
+    role: library
+    authority: blast_radius
+    data_access:
+      PUBLIC: read
+
+  - id: conflicts
+    role: library
+    authority: conflict_resolution
+    data_access:
+      PUBLIC: read_write
+
+  - id: consistency
+    role: library
+    authority: consistency_analysis
+    data_access:
+      PUBLIC: read
+
+  - id: access_auditor
+    role: library
+    authority: access_auditing
+    data_access:
+      PUBLIC: read
+
+  - id: http_api
+    role: service
+    protocol: http
+    port: 7700
+    authority: operational_api
+    data_access:
+      PUBLIC: read_write
+
+  - id: otlp_subscriber
+    role: service
+    authority: span_ingestion
+    data_access:
+      PUBLIC: read
+
+  - id: stigmergy_emitter
+    role: library
+    authority: signal_emission
+    data_access:
+      PUBLIC: write
+
+  - id: report
+    role: library
+    authority: feedback_reports
+    data_access:
+      PUBLIC: read
+
+edges:
+  - from: cli
+    to: registry
+    tier: internal
+  - from: cli
+    to: trust
+    tier: internal
+  - from: http_api
+    to: registry
+    tier: internal
+  - from: http_api
+    to: trust
+    tier: internal
+  - from: http_api
+    to: blast
+    tier: internal
+  - from: http_api
+    to: taint
+    tier: internal
+  - from: otlp_subscriber
+    to: consistency
+    tier: internal
+  - from: consistency
+    to: trust
+    tier: internal
+  - from: taint
+    to: trust
+    tier: internal
+  - from: conflicts
+    to: trust
+    tier: internal
+  - from: conflicts
+    to: registry
+    tier: internal
+  - from: blast
+    to: trust
+    tier: internal
+  - from: blast
+    to: registry
+    tier: internal
+  - from: trust
+    to: stigmergy_emitter
+    tier: cross_boundary
+  - from: report
+    to: trust
+    tier: internal
+  - from: report
+    to: registry
+    tier: internal

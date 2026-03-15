@@ -1,0 +1,40 @@
+version: "1"
+project: arbiter
+classification_tiers:
+  - name: PUBLIC
+    soak_duration_hours: 0
+    human_gate: false
+  - name: PII
+    soak_duration_hours: 24
+    human_gate: true
+  - name: COMPLIANCE
+    soak_duration_hours: 48
+    human_gate: true
+
+authority_map:
+  registry:
+    domain: access_graph
+    trust_score: 0.9
+  trust:
+    domain: trust_scoring
+    trust_score: 1.0
+  taint:
+    domain: canary_detection
+    trust_score: 0.85
+  blast:
+    domain: blast_radius
+    trust_score: 0.9
+  conflicts:
+    domain: conflict_resolution
+    trust_score: 0.8
+  consistency:
+    domain: consistency_analysis
+    trust_score: 0.9
+  otlp_subscriber:
+    domain: span_ingestion
+    trust_score: 0.7
+  stigmergy_emitter:
+    domain: signal_emission
+    trust_score: 0.7
+
+canary_eligible: [otlp_subscriber]
