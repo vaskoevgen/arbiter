@@ -1,0 +1,86 @@
+version: "1"
+project: arbiter
+constraints:
+  - id: C001
+    boundary: data_access_detection
+    condition: All node I/O operations must be observable through adapter layer
+    violation: Node accesses data without adapter-layer visibility
+    severity: must
+    rationale: Ground truth assumption - without adapter visibility, access auditing is impossible
+
+  - id: C002
+    boundary: trust_score_integrity
+    condition: Trust scores must be computed only from append-only ledger entries
+    violation: Trust score influenced by mutable state or self-reported metrics
+    severity: must
+    rationale: Trust manipulation would undermine entire enforcement model
+
+  - id: C003
+    boundary: canary_taint_tracking
+    condition: Canary data escape must immediately set trust factor to 0.0
+    violation: Node retains positive trust after canary data leak detected
+    severity: must
+    rationale: Canary escape indicates complete data boundary failure
+
+  - id: C004
+    boundary: authority_exclusivity
+    condition: Each data domain must have exactly one authoritative node
+    violation: Multiple nodes registered as authoritative for same domain
+    severity: must
+    rationale: Prevents authority conflicts and data consistency issues
+
+  - id: C005
+    boundary: declaration_completeness
+    condition: Node's OpenAPI schema must not expose data tiers beyond declared data_access
+    violation: Schema allows access to undeclared data tiers
+    severity: must
+    rationale: Declaration gaps indicate potential unauthorized access paths
+
+  - id: C006
+    boundary: trust_ledger_immutability
+    condition: Trust ledger must be append-only and external to monitored nodes
+    violation: Ledger entries modified or deleted, or ledger co-located with monitored node
+    severity: must
+    rationale: Mutable audit trail would allow trust score manipulation
+
+  - id: C007
+    boundary: consistency_verification
+    condition: Adapter-observed I/O must match node self-reported audit events
+    violation: Discrepancy between adapter observations and node claims
+    severity: must
+    rationale: Detects nodes violating their declared behavior contracts
+
+  - id: C008
+    boundary: human_gate_triggers
+    condition: Low-trust authoritative nodes must always require human review
+    violation: LOW_TRUST_AUTHORITATIVE node proceeds without human gate
+    severity: must
+    rationale: High-privilege nodes with degraded trust pose maximum risk
+
+  - id: C009
+    boundary: conflict_resolution_protocol
+    condition: Conflicts must follow three-step protocol: authority → trust → human
+    violation: Conflict resolved without checking authority or trust arbitration failed
+    severity: must
+    rationale: Ensures consistent and auditable conflict resolution
+
+  - id: C010
+    boundary: trust_factor_boundaries
+    condition: Trust scores must remain between 0.1 (floor) and 1.0 (ceiling)
+    violation: Trust score below 0.1 or above 1.0
+    severity: should
+    rationale: Maintains mathematical consistency in trust calculations
+
+  - id: C011
+    boundary: blast_radius_computation
+    condition: Soak duration must factor trust score, data tier, and volume confidence
+    violation: Blast radius calculated without all three factors
+    severity: should
+    rationale: Ensures deployment safety proportional to risk profile
+
+  - id: C012
+    boundary: span_enrichment
+    condition: OTLP spans should be enriched with trust and access metadata
+    violation: Spans forwarded without trust/access annotations
+    severity: should
+    rationale: Enables downstream systems to make trust-aware decisions
